@@ -1,19 +1,5 @@
-import os, random
 import streamlit as st
 from bukki import Bukki 
-from webCrawler import gen_research
-
-
-# CHANGE LLM MODEL TO GPT4 when ready
-
-# Scale up RESEARCH BREADTH & DEPTH >> ADD section for RESEARCH
-
-# ADD IMAGES (during writing)
-
-# ADD VOICED NARRATION (upload file to narrate) 
-
-# ---------------------
-# write a highly technical book about neuroevolution, explain the topic in detail and how the branch can be applied towards cognition inspired AI systems & AGI
 
 # Initialize Bukki instance in session state if it doesn't exist
 if 'bukki_instance' not in st.session_state:
@@ -145,11 +131,27 @@ categories_json = {
 }
 
 def run_ui():
+    
+    topcol1, topcol2, topcol3 = st.columns([8, 7, 3])
+    
+    if topcol1.button("Restart"):
+        # Reset the Bukki instance
+        st.session_state['bukki_instance'] = Bukki()
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        st.session_state.clear()
+        # Rerun the app to reflect the changes
+        st.rerun()
+    
+    with topcol3:
+        if st.button("Backup"):
+            download_button(disabled=False)        
+    
     st.markdown("<h1 style='text-align: center;'>Bukki</h1>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center;'> ~ A neural book writing system ~ </p>", unsafe_allow_html=True)
     
     # Main content area
-    col1, col2, col3, col4 = st.columns([2, 2, 2, 1])
+    col1, col2, col3 = st.columns([8, 7, 3])
 
     if col1.button("Automatic", key="auto"):
             st.session_state['pipeline'] = "Auto"
@@ -165,15 +167,6 @@ def run_ui():
             st.session_state['pipeline'] = "Research"
             st.session_state['bukki_instance'] = Bukki()  # Reinitialize Bukki instance for fresh start
             st.rerun()        
-
-    if col4.button("Restart"):
-        # Reset the Bukki instance
-            st.session_state['bukki_instance'] = Bukki()
-            for key in list(st.session_state.keys()):
-                del st.session_state[key]
-            st.session_state.clear()
-            # Rerun the app to reflect the changes
-            st.rerun()
 
     if 'pipeline' not in st.session_state:
         # This block only runs when the app is first loaded or reset
@@ -220,7 +213,7 @@ def auto_pipeline():
     # User input for direction
     direction = st.text_input("Provide a brief direction or theme for your book:", "a non-fiction book which would be a best seller in 2027")
     
-    col1, col2, col3 = st.columns([2, 2, 1])
+    col1, col2, col3 = st.columns([8, 7, 3])
     if col2.button("Generate"):
         st.session_state.bukki_instance = Bukki()
         # Initialize session state variables if not already done
@@ -380,7 +373,7 @@ def stage_select_category_subcategory():
     title_id = st.empty()
 
     button_container = st.container()
-    col1, col2, col3 = button_container.columns([2, 2, 1])
+    col1, col2, col3 = button_container.columns([8, 8, 2])
 
     # Use a flag in session state to manage title regeneration
     regenerate_titles = col2.button("Regenerate" if st.session_state.get('titles_sent', False) else "Generate")
@@ -426,7 +419,7 @@ def stage_enter_book_details():
 
     # Buttons container
     button_container = st.container()
-    col1, col2, col3 = button_container.columns([2, 2, 1])
+    col1, col2, col3 = button_container.columns([8, 8, 2])
 
     # Use a flag in session state to manage title regeneration
     regenerate_description = col2.button("Regenerate" if st.session_state.get('description_sent', False) else "Generate")
@@ -468,7 +461,7 @@ def stage_generate_research():
 
     # Container for buttons
     buttons_container = st.container()
-    col1, col2, col3 = buttons_container.columns([2, 2, 1])
+    col1, col2, col3 = buttons_container.columns([8, 8, 2])
     
     # Use a flag in session state to manage title regeneration
     regenerate_research = col2.button("Regenerate" if st.session_state.get('research_sent', False) else "Generate")
@@ -504,7 +497,7 @@ def stage_generate_outline():
         outline_field = st.empty()
         
     buttons_container = st.container()
-    col1, col2, col3 = buttons_container.columns([2, 2, 1])
+    col1, col2, col3 = buttons_container.columns([8, 8, 2])
 
     # Use a flag in session state to manage title regeneration
     regenerate_outline = col2.button("Regenerate" if st.session_state.get('outline_sent', False) else "Generate")
@@ -537,7 +530,7 @@ def stage_finalize_book():
         book_field = st.empty()
         
     buttons_container = st.container()
-    col1, col2, col3 = buttons_container.columns([2, 2, 1])
+    col1, col2, col3 = buttons_container.columns([8, 8, 2])
     
     # Use a flag in session state to manage title regeneration
     regenerate_book = col2.button("Regenerate" if st.session_state.get('book_sent', False) else "Generate")
