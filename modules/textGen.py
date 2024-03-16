@@ -50,7 +50,7 @@ from langchain.agents import AgentExecutor
 
 model= "gpt-3.5-turbo-0125" # gpt-4-0125-preview  gpt-3.5-turbo-0125 - EFFICIENTCY
 # MODEL & MEMORY : gpt-4-0125-preview gpt-3.5-turbo-0125
-writer_llm = ChatOpenAI(model = model, temperature = 0.618, max_retries = 3, max_tokens = 3000)
+writer_llm = ChatOpenAI(model = model, temperature = 0.618, max_retries = 3, max_tokens = 2500)
 writer_memory = ConversationTokenBufferMemory(llm=writer_llm, memory_key="writer_history", return_messages=True, max_token_limit=8000)
 research_breadth = 2
 research_depth = 2
@@ -524,20 +524,15 @@ def gen_book(description=None, research=None, outline_json=None):
     # extended_outline_md = utils.json_to_markdown(extended_outline_json)
     # utils.save_markdown(extended_outline_md, "outline_extended")
 
-    extended_outline_json = traverse_and_expand_json(outline_json, description, research, outline_md, subChapterExpander)
+    # extended_outline_json = traverse_and_expand_json(outline_json, description, research, outline_md, subChapterExpander)
     
-    # # ADDING ADDITONAL BITS
-    # if "Table of Contents" in extended_outline_json:
-    #     extended_outline_json["Table of Contents"]["Table of Contents"] = toc
-    
-    utils.save_json(extended_outline_json, "outline_extended_json")
-    extended_outline_md = utils.json_to_markdown(extended_outline_json)
-    utils.save_markdown(extended_outline_md, "outline_extended")
-    
+    # utils.save_json(extended_outline_json, "outline_extended_json")
+    # extended_outline_md = utils.json_to_markdown(extended_outline_json)
+    # utils.save_markdown(extended_outline_md, "outline_extended")
     
     # return extended_outline_md
     
-    book_json = traverse_and_expand_json(extended_outline_json, description, research, outline_md, writer)
+    book_json = traverse_and_expand_json(outline_json, description, research, outline_md, writer)
     
     book_json["References"]["Citations"] = hardvard_referencing(outline_md, research)
     
@@ -634,13 +629,13 @@ def gen_outline(description=None, research=None):
     ## Title
     ## Table of Contents (write just the list of chapters, don't leave blank)
     ## Introduction
-    Write a list of ideas which set the stage for the book's content. (3-5)
+    Write a list of ideas which set the stage for the book's content. (1-3)
 
     ## I. Chapter Title 
-    Write a list of essential subchapters to be covered. (3-5)
+    Write a list of essential subchapters to be covered. (1-3)
 
     ## Conclusion
-    Write a list of key takeaways and actionable insights to be included in the conclusion. (3-5)
+    Write a list of key takeaways and actionable insights to be included in the conclusion. (1-3)
 
     ## References _(If applicable)_
     Description of additional material included, reference the WEB RESEARCH.
