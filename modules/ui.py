@@ -265,7 +265,7 @@ def auto_pipeline():
             status_message.text("Generating book...")
             book = st.session_state.bukki_instance.send_book()
             progress_bar.progress(100)
-            st.session_state.book = "LOL"
+            st.session_state.book = book
             success_field.success("Book ready to Download!")
             st.write("\n---\n---\n# BOOK:\n")
             st.write(book)
