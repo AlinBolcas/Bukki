@@ -50,8 +50,8 @@ from langchain.agents import AgentExecutor
 
 model= "gpt-3.5-turbo-0125" # gpt-4-0125-preview  gpt-3.5-turbo-0125 - EFFICIENTCY
 # MODEL & MEMORY : gpt-4-0125-preview gpt-3.5-turbo-0125
-writer_llm = ChatOpenAI(model = model, temperature = 0.618, max_retries = 3, max_tokens = 3500)
-writer_memory = ConversationTokenBufferMemory(llm=writer_llm, memory_key="writer_history", return_messages=True, max_token_limit=8500)
+writer_llm = ChatOpenAI(model = model, temperature = 0.618, max_retries = 3, max_tokens = 3000)
+writer_memory = ConversationTokenBufferMemory(llm=writer_llm, memory_key="writer_history", return_messages=True, max_token_limit=8000)
 research_breadth = 2
 research_depth = 2
 
@@ -368,11 +368,10 @@ def subChapterExpander(user_input, description, research, outline_md):
     **Coherence:** Ensure that the list of elements follow a natural and coherent flow with the books's context and outline. Ensure that the style is consistent and the overall message is clear and engaging from micro to macro scale.
     **Quality:** Strive to produce content of the highest quality that is transparent and invaluable to any reader interested in the topic.
     **Research Sourcing:** You're welcome to quote relevant sources from RESEARCH to inform your list when applicable.
-    **Length:** The ideas should be structured as a branching dictionary with a minimum of 3-5 elements which are meant to later be further expanded upon within the broader book context.
+    **Length:** The ideas should be structured as a dictionary with 1-3 elements which are meant to later be further expanded upon within the broader book context.
     Do not repeat the same information throughout the book. (making use of the OUTLINE context and conversation history)
     **Focus:** Get straight to the task and don't mention the instructions. 
     Don't write '##IDEA EXPANSION' nor 'core idea', nor 'key points', but find a contextually appropriate name for the KEY of the list. (No numbered list nor bullet points)
-    Take your time to go in depth on how to best examine, explore, debate, intrigue, explain, or present all the requested ides.
     **IMPORTANT:** Respond in a list as JSON format in a block.
     ---
     # SUBCHAPTER IDEA:
@@ -598,18 +597,18 @@ def gen_outline(description=None, research=None):
     ## Title
     ## Table of Contents
     ## Introduction
-    Write a list of ideas which set the stage for the book's content. (3-5)
+    Write a list of ideas which set the stage for the book's content. (1-3)
 
     ## Chapter 1: Chapter Title
-    Write a list of essential subchapters to be covered. (3-5)
+    Write a list of essential subchapters to be covered. (1-3)
 
     ## Chapter 2: Chapter Title
-    Write a list of essential subchapters to be covered. (3-5)
+    Write a list of essential subchapters to be covered. (1-3)
 
     _Continue with the same structure for the number of chapters applicable for when expanded it approximately reaches the target word count._
 
     ## Conclusion
-    Write a list of key takeaways and actionable insights to be included in the conclusion. (3-5)
+    Write a list of key takeaways and actionable insights to be included in the conclusion. (1-3)
 
     ## References _(If applicable)_
     Description of additional material included, reference the WEB RESEARCH.
