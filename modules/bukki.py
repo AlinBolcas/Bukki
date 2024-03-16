@@ -3,7 +3,9 @@ import utils
 
 import os, random, re
 # from threading import Thread
+import io
 from zipfile import ZipFile
+import uuid
 from webCrawler import gen_research
 
 # Define the Bukki system
@@ -118,28 +120,37 @@ class Bukki:
         return solo_research
     
     def export_all(self):
-        # Directory where markdown files are saved
         print(">>> EXPORTING ALL MARKDOWN FILES")
         output_dir = "output"
-
-        # else:
-        file_names = ["description.md", "research.md", "outline.md", "book.md", "solo_research.md"]
-        zip_file_name = f"book_package.zip"
-            
-        # Full path to the zip file
+        
+        # Dynamically create unique names for the zip file
+        unique_id = uuid.uuid4().hex
+        zip_file_name = f"book_package_{unique_id}.zip"
         zip_file_path = os.path.join(output_dir, zip_file_name)
 
-        # Create a zip file and add the markdown files
-        with ZipFile(zip_file_path, 'w') as zipf:
-            for file_name in file_names:
-                # Full path to the markdown file
-                file_path = os.path.join(output_dir, file_name)
-                # Check if the file exists before adding it to the zip
-                if os.path.exists(file_path):
-                    zipf.write(file_path, os.path.basename(file_path))
-                else:
-                    print(f"Warning: {file_path} does not exist and will not be included in the zip file.")
-        
+        # Dictionary mapping file names to content
+        markdown_contents = {
+            "description.md": self.description,
+            "research.md": self.research,
+            "outline.md": utils.json_to_markdown(self.outline),
+            "book.md": self.book,
+            "solo_research.md": self.solo_research(self.description)  # Assuming this method returns the content directly
+        }
+
+        # Use a memory buffer for creating the zip file
+        with io.BytesIO() as zip_buffer:
+            with ZipFile(zip_buffer, 'w') as zipf:
+                for file_name, content in markdown_contents.items():
+                    if content:  # Ensure there is content to write
+                        zipf.writestr(file_name, content)
+                    else:
+                        print(f"Warning: Content for {file_name} is empty and will not be included in the zip file.")
+            
+            # Save the zip file to disk
+            os.makedirs(output_dir, exist_ok=True)
+            with open(zip_file_path, 'wb') as f:
+                f.write(zip_buffer.getvalue())
+
         print(f"Zip file created: {zip_file_path}")
         return zip_file_path
     

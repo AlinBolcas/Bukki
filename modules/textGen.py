@@ -537,7 +537,7 @@ def gen_book(description=None, research=None, outline_json=None):
     book_json["References"]["Citations"] = hardvard_referencing(outline_md, research)
     
     book = utils.json_to_markdown(book_json)
-    utils.save_markdown(book, "book")
+    # utils.save_markdown(book, "book")
     return book
 
 def gen_outline(description=None, research=None):
@@ -691,8 +691,8 @@ def gen_outline(description=None, research=None):
     json_outline = utils.extract_json(outline, lambda: outline_chain.invoke(description))
     md_outline = utils.json_to_markdown(json_outline)
     
-    utils.save_markdown(md_outline, "outline")
-    utils.save_json(json_outline, "outline_json")
+    # utils.save_markdown(md_outline, "outline")
+    # utils.save_json(json_outline, "outline_json")
     
     # print(">>>Book Outline Final: \n", md_outline, "\n")
     
@@ -845,7 +845,7 @@ def gen_research(description=None):
     print(f">>>Research is generating...")
     research = chain.invoke(description)
     full_research = research + "\n\n" + web_research # "# RESEARCH REPORT\n\n" +
-    utils.save_markdown(full_research, "research")
+    # utils.save_markdown(full_research, "research")
     
     # utils.save_markdown(web_research, "web_research")   
     
