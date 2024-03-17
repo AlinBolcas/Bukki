@@ -144,7 +144,7 @@ def run_ui():
         st.rerun()
     
     with topcol3:
-        if st.button("Backup"):
+        if st.button("Download All"):
             download_button(disabled=False)        
     
     st.markdown("<h1 style='text-align: center;'>Bukki</h1>", unsafe_allow_html=True)

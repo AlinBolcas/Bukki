@@ -50,7 +50,7 @@ from langchain.agents import AgentExecutor
 
 model= "gpt-3.5-turbo-0125" # gpt-4-0125-preview  gpt-3.5-turbo-0125 - EFFICIENTCY
 # MODEL & MEMORY : gpt-4-0125-preview gpt-3.5-turbo-0125
-writer_llm = ChatOpenAI(model = model, temperature = 0.618, max_retries = 3, max_tokens = 2500)
+writer_llm = ChatOpenAI(model = model, temperature = 0.618, max_retries = 3, max_tokens = 3000)
 writer_memory = ConversationTokenBufferMemory(llm=writer_llm, memory_key="writer_history", return_messages=True, max_token_limit=8000)
 research_breadth = 2
 research_depth = 2
@@ -524,7 +524,7 @@ def gen_book(description=None, research=None, outline_json=None):
     # extended_outline_md = utils.json_to_markdown(extended_outline_json)
     # utils.save_markdown(extended_outline_md, "outline_extended")
 
-    # extended_outline_json = traverse_and_expand_json(outline_json, description, research, outline_md, subChapterExpander)
+    extended_outline_json = traverse_and_expand_json(outline_json, description, research, outline_md, subChapterExpander)
     
     # utils.save_json(extended_outline_json, "outline_extended_json")
     # extended_outline_md = utils.json_to_markdown(extended_outline_json)
@@ -532,7 +532,7 @@ def gen_book(description=None, research=None, outline_json=None):
     
     # return extended_outline_md
     
-    book_json = traverse_and_expand_json(outline_json, description, research, outline_md, writer)
+    book_json = traverse_and_expand_json(extended_outline_json, description, research, outline_md, writer)
     
     # book_json["References"] = hardvard_referencing(outline_md, research)
     
