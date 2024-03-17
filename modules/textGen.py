@@ -534,7 +534,7 @@ def gen_book(description=None, research=None, outline_json=None):
     
     book_json = traverse_and_expand_json(outline_json, description, research, outline_md, writer)
     
-    book_json["References"]["Citations"] = hardvard_referencing(outline_md, research)
+    # book_json["References"] = hardvard_referencing(outline_md, research)
     
     book = utils.json_to_markdown(book_json)
     # utils.save_markdown(book, "book")
