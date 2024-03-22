@@ -48,22 +48,30 @@ class Bukki:
             
             self.style = tg.gen_style(random_title, self.bio, "create the most relevant style of writing example for the title and bio to suit the book.")
         
-        if title_id == -1:
+        if title_id == -1 or title_id < 0 or title_id >= len(self.titles):
             title_id = random.randint(0, len(self.titles)-1)
-        
+
         title_key = list(self.titles.keys())[title_id]
         title_key_processed = re.sub(r'^[^A-Za-z]*', '', title_key)    
         title_value = self.titles[title_key]
-        
-        # Ensure title_value is a string before concatenation
-        if isinstance(title_value, dict):
-            # Handle the case where title_value is a dict (customize as needed)
-            title_value_str = title_value[0]  # Example access
-        elif isinstance(title_value, str):
-            title_value_str = title_value
-        else:
-            # Default handling for unexpected types
-            title_value_str = str(title_value)
+
+        # Handling different types of title_value
+        try:
+            if isinstance(title_value, dict):
+                # Assuming the dict contains a list and you need the first item
+                # Adjust logic here depending on the actual structure of your dict
+                first_key = list(title_value.keys())[0]
+                title_value_str = title_value[first_key]
+            elif isinstance(title_value, str):
+                title_value_str = title_value
+            else:
+                # Fallback for other types
+                title_value_str = str(title_value)
+        except Exception as e:
+            # Handle exceptions, e.g., KeyError, TypeError, IndexError
+            print(f"Error processing title_value: {e}")
+            # Fallback or error handling strategy here
+            title_value_str = "Error processing title, please go back and regenerate."
         
         self.title_select = "## " + title_key_processed + "\n" + title_value_str
         
@@ -117,6 +125,7 @@ class Bukki:
             print(f"Error with paid engine: {paid_engine_error}")
             # Return this message when both attempts fail
             return "There are no credits to make research."
+        self.research = solo_research
         return solo_research
     
     def export_all(self):
@@ -134,7 +143,6 @@ class Bukki:
             "research.md": self.research,
             "outline.md": utils.json_to_markdown(self.outline),
             "book.md": self.book,
-            "solo_research.md": self.solo_research(self.description)  # Assuming this method returns the content directly
         }
 
         # Use a memory buffer for creating the zip file

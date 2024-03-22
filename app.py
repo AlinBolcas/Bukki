@@ -8,6 +8,7 @@ modules_dir = os.path.join(project_dir, 'modules')
 sys.path.append(modules_dir)
 
 from ui import run_ui
+# from utils import test
 
 def run_app():
     run_ui()
@@ -15,3 +16,4 @@ def run_app():
 if __name__ == "__main__":
     run_app()
     
+    # test()

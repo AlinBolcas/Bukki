@@ -145,7 +145,7 @@ def run_ui():
     
     with topcol3:
         if st.button("Download"):
-            download_button(disabled=False)        
+            download_button()        
     
     st.markdown("<h1 style='text-align: center;'>Bukki</h1>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center;'> ~ A neural book writing system ~ </p>", unsafe_allow_html=True)
@@ -192,7 +192,7 @@ def run_ui():
         elif st.session_state['pipeline'] == "Research":
             research_pipeline()
             
-def download_button(disabled=True):
+def download_button(disabled=False):
     print(">>> Download button pressed...")
     zip_file_path = st.session_state.bukki_instance.export_all()
     
@@ -359,6 +359,7 @@ def stage_select_category_subcategory():
     selected_category = st.selectbox("Select Category", options=list(categories_json.keys()))
     selected_subcategory = st.selectbox("Select Subcategory", options=categories_json[selected_category])
     direction = st.text_input("Additional Details:")
+    st.markdown("**Note:** Think of a meta-description of the book.")
 
     if 'titles' not in st.session_state or st.session_state.titles_sent == False:
         success_field = st.empty()
@@ -366,6 +367,7 @@ def stage_select_category_subcategory():
         # st.write("Titles not existant, not been sent.")
     else:
         success_field = st.empty()
+        success_field.success("Titles generated!")
         st.write(st.session_state.titles)
         titles_field = st.empty()
         # st.write("Titles existant, have been sent.")
@@ -406,14 +408,15 @@ def stage_enter_book_details():
     title_id = st.session_state.title_id
     st.write("Selected Title:", title_id)
     # words_input = st.number_input("Words Target Count: (k)", min_value=5, step=10, max_value=150, value=10)
-    bio_input = st.text_area("Biography:", "Enter a brief description about the author.")
-    style_input = st.text_area("Style:", "Enter a brief sample of the target writing style.")
+    bio_input = st.text_area("Biography:") # "Enter a brief description about the author."
+    style_input = st.text_area("Style:") # "Enter a brief sample of the target writing style."
 
     if 'description' not in st.session_state or st.session_state.description_sent == False:
         success_field = st.empty()        
         description_field = st.empty()
     else:
         success_field = st.empty()
+        success_field.success("Description generated!")
         st.write(st.session_state.description)
         description_field = st.empty()
 
@@ -456,6 +459,7 @@ def stage_generate_research():
         research_field = st.empty()
     else:
         success_field = st.empty()
+        success_field.success("Research generated!")
         st.write(st.session_state.research_out)
         research_field = st.empty()
 
@@ -493,6 +497,7 @@ def stage_generate_outline():
         outline_field = st.empty()
     else:
         success_field = st.empty()
+        success_field.success("Outline generated!")
         st.write(st.session_state.outline)
         outline_field = st.empty()
         
@@ -521,40 +526,36 @@ def stage_generate_outline():
 
 def stage_finalize_book():
     st.subheader("Step 5: Generate Full Book")
-    
-    if 'book' not in st.session_state or st.session_state.book_sent == False:
-        success_field = st.empty()
-        book_field = st.empty()
-    else:
-        success_field = st.empty()        
-        book_field = st.empty()
-        
+    st.write("This final process may take up to 30 min. It's advised to download your progress so far from the upper right corner.")
+    success_field = st.empty()
+    book_field = st.empty()
+
     buttons_container = st.container()
-    col1, col2, col3 = buttons_container.columns([8, 8, 2])
-    
+    col1, col2, col3 = buttons_container.columns([2, 2, 1])
+
     # Use a flag in session state to manage title regeneration
     regenerate_book = col2.button("Regenerate" if st.session_state.get('book_sent', False) else "Generate")
-    
+
     if col1.button("Back"):
         st.session_state['current_stage'] -= 1
         st.rerun()
-        
-    # Finalize button to generate and display the final book content
+
     if regenerate_book:
-        with st.spinner("Generating Book... this may take 15-25 minutes"):
+        with st.spinner("Generating Book... this may take up to 30 minutes"):
             book = st.session_state.bukki_instance.send_book()
-            st.session_state.book_sent = True
             st.session_state.book = book
+            st.session_state.book_sent = True
             success_field.success("Book generated!")
             book_field.write(book)
             st.rerun()
-    
-    elif st.session_state.get('book_sent', False):
+            
+    elif st.session_state.get('book_sent', False) and 'book' in st.session_state:
+        # Only attempt to display the book if 'book_sent' is True and 'book' exists in the session state
         success_field.success("Book's ready!")
         book_field.write(st.session_state.book)
         with col3:
-            disabled=not(st.session_state.get('book_sent', False))
-            download_button(disabled)
+            if st.button("Download", key="final-download"):
+                download_button()  # Assuming this is a defined function elsewhere
 
 if __name__ == "__main__":
     run_ui()

@@ -14,6 +14,11 @@ load_dotenv()
 # Read the API key from the environment variable
 api_key = os.getenv("OPENAI_API_KEY")
 
+# stock market investement guide in 2025. Everything to know to invest most effectively.
+# brainstorm on an in depth book about how to practically and technically simulate consciousness in an ai system, through different dedicated modules using a carefully design system architecture.
+# enable paid research
+# finally set writing models to gpt4
+
 # LLM
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain.schema import StrOutputParser
@@ -45,13 +50,13 @@ from langchain.agents.format_scratchpad import format_to_openai_function_message
 from langchain.agents.output_parsers import OpenAIFunctionsAgentOutputParser
 from langchain.agents import tool
 from langchain.agents import AgentExecutor
-
 # ---
 
 model= "gpt-3.5-turbo-0125" # gpt-4-0125-preview  gpt-3.5-turbo-0125 - EFFICIENTCY
 # MODEL & MEMORY : gpt-4-0125-preview gpt-3.5-turbo-0125
-writer_llm = ChatOpenAI(model = model, temperature = 0.618, max_retries = 3, max_tokens = 3000)
-writer_memory = ConversationTokenBufferMemory(llm=writer_llm, memory_key="writer_history", return_messages=True, max_token_limit=8000)
+writer_llm = ChatOpenAI(model = model, temperature = 0.85, max_retries = 3, max_tokens = 2500)
+writer_memory = ConversationTokenBufferMemory(llm=writer_llm, memory_key="writer_history", return_messages=True, max_token_limit=7500)
+gpt35_llm = ChatOpenAI(model = "gpt-3.5-turbo-0125", temperature = 0.331, max_retries = 3, max_tokens = 3000)
 research_breadth = 2
 research_depth = 2
 
@@ -188,7 +193,7 @@ def hardvard_referencing(outline, research):
         RunnableParallel({"context": retriever, "input": RunnablePassthrough()})
         | RunnablePassthrough.assign(writer_history=RunnableLambda(writer_memory.load_memory_variables) | itemgetter("writer_history"))
         | promptTemplate
-        | writer_llm
+        | gpt35_llm
         | StrOutputParser()
     )
 
@@ -207,43 +212,57 @@ def hardvard_referencing(outline, research):
     return output
 
 def writer(idea, description, research, outline_md):
-    context = f"""
-    # BOOK OVERVIEW:
-    *{description}*
+    user_input = f"""
+    # IDEA/REQUEST:
+    *{idea}*
     ---
     # BOOK OUTLINE:
     *{outline_md}*
     ---
-    # RESEARCH CONTEXT:
-    *{research}*
+    # BOOK OVERVIEW:
+    *{description}*
     """
 
+    # print("\n\n>>> !!! BOOK CONTEXT:\n", book_context, "\n\n")
+    old_system = """
+    You are to act as an innovative high-level literary agent for non-fiction authors with the ability to suggest bestselling book ideas that solve real problems for readers based on your knowledge and traits.
+
+    KNOWLEDGE: Selling book proposals and manuscripts to publishers, negotiating book contracts on behalf of clients, deep understanding of the literary craft and the non-fiction book market, developing and refining manuscripts, deep understanding of first principles, problem and solution markets, advanced copywriting and persuasion skills, with psychographic and qualitative data expertise.
+   
+    TRAITS: high business acumen, complex problem-solving skills, adaptability, creativity, financial analysis, analytical thinking, critical thinking, strategic thinking, organizational skills, project management, innovation, research skills, problem-solving skills, decision-making skills, empathy and creativity.
+    """
+    
     creative_system =  """
     You are a world-class best-selling author and a successful book writer. 
     You provide top quality ghost writing expertise in writing succesful, captivating, value generating books. 
     Your extensive knowledge and abilities allow you to attend to requests with precision and effectiveness, delivering tailored guidance and support to help individuals and businesses succeed in the competitive world of book publishing and sales. 
     Offer valuable content to propel your clients to success.
     ---
-    # BOOK CONTEXT:
+    # DRAFT MANUSCRIPT - BOOK CONTEXT:
     *{context}*
     
     """
     creative_user = """
     # Instructions: 
-    **Task:** You are writing a book of the given context.
-    With each call, you're provided an idea as part of a larger hierarchical construct which makes up the architecture of the book.
-    Your job is to fully develop this point of expansion in an engaging and coherent way with the the overarching book context.
-    **Coherence:** Ensure that the any added text is meaningful within the larger accomplishing message/story/point meant to be made to the reader.
-    **Quality:** Strive to produce content of the highest regard that is transparent and invaluable to any reader interested in the topic.
-    **Research Sourcing:** You're welcome to quote relevant sources from the research to support your writing when applicable.
-    **Length:** Always write as much as possible whilst remaining relevant within the bigger picture. Take your time to thoroughly, but AVOID unnecessary verbosity. Do not repeat the same information, keep it readable.
-    **Focus:** Get straight to the task and don't mention the instructions. 
-    Don't write ## IDEA EXPANSION or anything like that, respond only with a natural continuation of the text corpus.
-    **IMPORTANT:** If the 'IDEA/REQUEST' section sounds like an instruction to act upon, do so relative to the context, don't simply expand upon the instruction, but execute it.
-    Do NOT self reference the book while writing the book. Write the actual book instead by focusing on the content. Also, avoid personal stories unless you can invent real examples to suit the book's context.
-    **Formatting:** Reply in MARKDOWN format for better readability, but don't add a markdown block. 
+    **Task:** 
+    You are writing a book of the given context.
+    With each call, you're provided an subchapter as part of the contents of the book.
+    Work through the IDEA/REQUEST in a way that's engaging and coherent with the rest of the book.
+    **Quality:** 
+    Produce content of the highest regard that is transparent and invaluable to any reader.
+    **Research:** 
+    When Applicable cite relevant sources from the RESEARCH to support your writing when applicable.
+    **Length:** 
+    AVOID unnecessary verbosity. Do not repeat the same information, keep it readable.
+    **Focus:** 
+    Get straight to the task and don't mention the instructions. 
+    Don't write ## IDEA EXPANSION or anything like that, respond only with a natural continuation of the book.
+    **IMPORTANT NOTES:** 
+    DO NOT start each response with repeating phrases, render a natural continuation of the text.
+    If the 'IDEA/REQUEST' section sounds like an instruction to act upon, do so relative to the book context, don't simply expand upon the instruction, but execute it.
+    Do NOT self reference the book while writing the book. AVOID repeating and self referencing 'In the chapter so and so..'. Write the actual book instead by focusing on the content. Also, avoid personal stories unless you can invent real examples to suit the book's context.
+    Use the STYLE SAMPLE as a the reference for the writing style and formatting!
     ---
-    # IDEA/REQUEST:
     *{input}*
     """
     
@@ -272,7 +291,7 @@ def writer(idea, description, research, outline_md):
     """
     
     # TEXT to DOCUMENT object
-    text_doc = Document(page_content=context)
+    text_doc = Document(page_content=research)
     
     # SPLITTING TEXT / DOCUMENT
     text_splitter = CharacterTextSplitter.from_tiktoken_encoder(chunk_size=684, chunk_overlap=50)
@@ -314,16 +333,16 @@ def writer(idea, description, research, outline_md):
     #     | StrOutputParser()
     # )
 
-    creative_output = creative_chain.invoke(idea)
+    creative_output = creative_chain.invoke(user_input)
     
-    current_memory = writer_memory.load_memory_variables({})
-    if current_memory["writer_history"]:
-        last_ai_message = current_memory["writer_history"][-1].content
-        historic = {"input": last_ai_message}
-    else:
-        historic = {"input": idea}
+    # current_memory = writer_memory.load_memory_variables({})
+    # if current_memory["writer_history"]:
+    #     last_ai_message = current_memory["writer_history"][-1].content
+    #     historic = {"input": last_ai_message}
+    # else:
+    #     historic = {"input": user_input}
         
-    writer_memory.save_context(historic, {"output": creative_output})
+    writer_memory.save_context({"input": user_input}, {"output": creative_output})
 
     # print(">>> CREATIVE:\n", creative_output, "\n")
     # critic_output = critic_chain.invoke(creative_output)
@@ -340,15 +359,15 @@ def writer(idea, description, research, outline_md):
     return creative_output
 
 def subChapterExpander(user_input, description, research, outline_md):
-    context = f"""
+    input = f"""
     # BOOK OVERVIEW:
     *{description}*
     ---
     # BOOK OUTLINE:
     *{outline_md}*
     ---
-    # RESEARCH CONTEXT:
-    *{research}*
+    # SUBCHAPTER IDEA:
+    *{user_input}*
     """
 
     system_message =  """
@@ -370,17 +389,18 @@ def subChapterExpander(user_input, description, research, outline_md):
     **Research Sourcing:** You're welcome to quote relevant sources from RESEARCH to inform your list when applicable.
     **Length:** The ideas should be structured as a dictionary with 1-3 elements which are meant to later be further expanded upon within the broader book context.
     Do not repeat the same information throughout the book. (making use of the OUTLINE context and conversation history)
-    **Focus:** Get straight to the task and don't mention the instructions. 
-    Don't write '##IDEA EXPANSION' nor 'core idea', nor 'key points', but find a contextually appropriate name for the KEY of the list. (No numbered list nor bullet points)
+    **Focus:** 
+    Get straight to the task and don't mention the instructions.
+    Don't write '##IDEA EXPANSION' nor 'core idea', nor 'key points' or anything weird titles like that, but find a contextually appropriate subtitle name for the list. (No numbered list nor bullet points)
+    Don't repeat yourself please.
     **IMPORTANT:** Respond in a list as JSON format in a block.
     ---
-    # SUBCHAPTER IDEA:
-    *{input}*
+    {input}
     
     """
     
     # TEXT to DOCUMENT object
-    text_doc = Document(page_content=context)
+    text_doc = Document(page_content=research)
     
     # SPLITTING TEXT / DOCUMENT
     text_splitter = CharacterTextSplitter.from_tiktoken_encoder(chunk_size=684, chunk_overlap=50)
@@ -400,18 +420,19 @@ def subChapterExpander(user_input, description, research, outline_md):
     HumanMessagePromptTemplate.from_template(user_message),
     ])
     
+    
     # chains
     chain = (
         RunnableParallel({"context": retriever, "input": RunnablePassthrough()})
         | RunnablePassthrough.assign(writer_history=RunnableLambda(writer_memory.load_memory_variables) | itemgetter("writer_history"))
         | promptTemplate
-        | writer_llm
+        | gpt35_llm
         | StrOutputParser()
     )
 
-    output = chain.invoke(user_input)
+    output = chain.invoke(input)
     
-    json_output = utils.extract_json(output, lambda: chain.invoke(user_input))
+    json_output = utils.extract_json(output, lambda: chain.invoke(input))
     md_output = utils.json_to_markdown(json_output)
     
     current_memory = writer_memory.load_memory_variables({})
@@ -421,7 +442,7 @@ def subChapterExpander(user_input, description, research, outline_md):
         last_ai_message = current_memory["writer_history"][-1].content
         historic = {"input": last_ai_message}
     else:
-        historic = {"input": user_input}
+        historic = {"input": input}
         
     writer_memory.save_context(historic, {"output": md_output})
 
@@ -466,12 +487,31 @@ def gen_book(description=None, research=None, outline_json=None):
     print(f">>>Book Draft is generating...")
     outline_md = utils.json_to_markdown(outline_json)
     
-    def should_expand(key):
-        # Define keys that should not be expanded.
-        not_expandable = [""]
-        # return key.lower() not in not_expandable 
-        return True
+    writer_memory.clear()
     
+    # def should_expand0(key):
+    #     # Define keys that should not be expanded.
+    #     not_expandable = ["title", "table of contents", "references", "about the author"]
+    #     return key.lower() not in not_expandable 
+    #     # return True
+    
+    # def should_expand1(key, value):
+    #     not_expandable = ["title", "table of contents", "references", "about the author", "conclusion", "introduction"]
+        
+    #     # Safely handle None for key
+    #     key_check = False if key is None else key.lower() in [n.lower() for n in not_expandable]
+        
+    #     value_check = False
+    #     if isinstance(value, str):
+    #         value_check = any(non_expandable_word.lower() is value.lower() for non_expandable_word in not_expandable)
+        
+    #     return not (key_check or value_check)
+    
+    def should_expand(key):
+        not_expandable = ["title", "table of contents"]
+        # Return False immediately if the key matches any non-expandable entry, case-insensitively.
+        return False if key is not None and key.lower() in (n.lower() for n in not_expandable) else True
+        
     def remove_bullet_points(text):
         # Remove bullet points from the text if it starts with a bullet.
         if text.startswith("-"):
@@ -480,39 +520,39 @@ def gen_book(description=None, research=None, outline_json=None):
         text = re.sub(r'^[-•\d]+\s*', '', text)
         return text
     
-    # def table_of_contents(outline_json):
-    #     toc_items = []
-    #     # Directly append all chapter/section titles to the TOC list
-    #     for key in outline_json.keys():
-    #         if key.lower() not in ["references", "about the author", "title", "table of contents"]:
-    #             toc_items.append(key)  # Add all other keys as chapters/sections
-    #     return toc_items
-    
     def traverse_and_expand_json(outline_json, description, research, outline_md, expander=writer):
-
         if isinstance(outline_json, dict):
             for key, value in outline_json.items():
-                if isinstance(value, str):
-                    expand = should_expand(key)
-                    cleaned_value = remove_bullet_points(value)
-                    prompt = f"{cleaned_value}" if expand else f"{key}: {cleaned_value}"
-                    # outline_json[key] = "EXPANDED DICT VALUE" if expand else cleaned_value
-                    outline_json[key] = expander(prompt, description, research, outline_md) if expand else cleaned_value
-                    print(f"\n>>>EXPANDING DICT: {key} :: {cleaned_value}\n\n...")
-                    
-                elif isinstance(value, dict) or isinstance(value, list):
-                    outline_json[key] = traverse_and_expand_json(value, description, research, outline_md, expander)
+                if should_expand(key):
+                    if isinstance(value, str):
+                        cleaned_value = remove_bullet_points(value)
+                        if expander is writer:
+                            outline_json[key] = expander(cleaned_value, description, research, outline_md)
+                            print(f"\n>>>WRITER Expanding on KEY: {key} : \nVALUE: {cleaned_value}\n\n...")
+                        else:
+                            outline_json[key] = expander(cleaned_value, description, research, outline_md)
+                            print(f"\n>>>SUBCHAPTER Expanding on KEY: {key} : \nVALUE: {cleaned_value}\n\n...")
+                        
+                    elif isinstance(value, dict) or isinstance(value, list):
+                        outline_json[key] = traverse_and_expand_json(value, description, research, outline_md, expander)
+                else:
+                    print(f"\n>>>SKIPPING KEY: {key}\n\n")
                     
         elif isinstance(outline_json, list):
             for i, item in enumerate(outline_json):
+                if isinstance(item, dict) or isinstance(item, list):
+                    for key in item.keys():
+                        outline_json[i] = traverse_and_expand_json(item, description, research, outline_md, expander)
                 if isinstance(item, str):
                     cleaned_item = remove_bullet_points(item)
-                    # outline_json[i] = "EXPANDED LIST VALUE"
-                    outline_json[i] = expander(cleaned_item, description, research, outline_md)
-                    print(f"\n>>>EXPANDING LIST: {cleaned_item}\n\n...")
+                    if expander is writer:
+                        outline_json[i] = expander(cleaned_item, description, research, outline_md)
+                        print(f"\n>>>WRITER Expanding on ITEM\n: {cleaned_item}\n\n...")
+                    else:
+                        outline_json[i] = expander(cleaned_item, description, research, outline_md)
+                        print(f"\n>>>SUBCHAPTER Expanding on ITEM\n: {cleaned_item}\n\n...")
                 else:
                     outline_json[i] = traverse_and_expand_json(item, description, research, outline_md, expander)
-        
         return outline_json
     
     # toc = utils.json_to_markdown(table_of_contents(outline_json))
@@ -524,20 +564,24 @@ def gen_book(description=None, research=None, outline_json=None):
     # extended_outline_md = utils.json_to_markdown(extended_outline_json)
     # utils.save_markdown(extended_outline_md, "outline_extended")
 
+    # !!!
     extended_outline_json = traverse_and_expand_json(outline_json, description, research, outline_md, subChapterExpander)
+    extended_outline_md = utils.json_to_markdown(extended_outline_json)
+    utils.save_json(extended_outline_json, "outline_extended_json")
+    utils.save_markdown(extended_outline_md, "outline_extended")
+    writer_memory.clear()
+    # !!!
     
-    # utils.save_json(extended_outline_json, "outline_extended_json")
-    # extended_outline_md = utils.json_to_markdown(extended_outline_json)
-    # utils.save_markdown(extended_outline_md, "outline_extended")
-    
-    # return extended_outline_md
-    
-    book_json = traverse_and_expand_json(extended_outline_json, description, research, outline_md, writer)
-    
-    # book_json["References"] = hardvard_referencing(outline_md, research)
+    # Initial call
+    book_json = traverse_and_expand_json(extended_outline_json, description, research, extended_outline_md, writer)
+    utils.save_json(book_json, "book_json")   
+
+    if book_json["References"]:
+        writer_memory.clear()
+        book_json["References"] = hardvard_referencing(outline_md, research)
     
     book = utils.json_to_markdown(book_json)
-    # utils.save_markdown(book, "book")
+    utils.save_markdown(book, "book")
     return book
 
 def gen_outline(description=None, research=None):
@@ -618,7 +662,7 @@ def gen_outline(description=None, research=None):
     
     user_message = """
     # Instructions: 
-    - Write the Outline for the specified book. Write a minimum of 5-10 chapters. (add roman numerals)
+    - Write the Outline for the specified book. Write a minimum of 5-8 chapters. (use roman numerals)
     - Use the provided context to align the outline with the book's genre, style, target audience, and all the other relevant details.
     - Ensure coherence and consistency throughout the outline.
     - Be concise with each section, providing clear and actionable indications to be expanded upon.
@@ -629,16 +673,16 @@ def gen_outline(description=None, research=None):
     ## Title
     ## Table of Contents (write just the list of chapters, don't leave blank)
     ## Introduction
-    Write a list of ideas which set the stage for the book's content. (1-3)
+    Write a list of 1 to 3 ideas which set the stage for the book's content.
 
     ## I. Chapter Title 
-    Write a list of essential subchapters to be covered. (1-3)
+    Write a list of 1 to 3 essential subchapters to be covered.
 
     ## Conclusion
-    Write a list of key takeaways and actionable insights to be included in the conclusion. (1-3)
+    Write a list of 1 to 3 key takeaways and actionable insights to be included in the conclusion.
 
     ## References _(If applicable)_
-    Description of additional material included, reference the WEB RESEARCH.
+    Description of additional material included, reference the RESEARCH.
 
     ## About the Author _(If applicable)_
     Brief biography of the author, including credentials and previous works.
@@ -665,7 +709,7 @@ def gen_outline(description=None, research=None):
     # MODEL
     llm = ChatOpenAI(
         model = "gpt-4-0125-preview", #  gpt-4-0125-preview gpt-3.5-turbo-0125
-        temperature = 0.618,
+        temperature = 0.331,
         max_retries = 3,
         # max_tokens = 1000,
         )
@@ -691,8 +735,8 @@ def gen_outline(description=None, research=None):
     json_outline = utils.extract_json(outline, lambda: outline_chain.invoke(description))
     md_outline = utils.json_to_markdown(json_outline)
     
-    # utils.save_markdown(md_outline, "outline")
-    # utils.save_json(json_outline, "outline_json")
+    utils.save_markdown(md_outline, "outline")
+    utils.save_json(json_outline, "outline_json")
     
     # print(">>>Book Outline Final: \n", md_outline, "\n")
     
@@ -724,7 +768,7 @@ def gen_research(description=None):
     else:
         print(f">>>Using given title for Research:\n\n{description}\n\n")
 
-    web_research = webc.gen_research(description, research_breadth, research_depth, research_name="web_research")
+    web_research = webc.gen_research(description, research_breadth, research_depth, research_name="web_research", paid_engine=False)
     
     system_message = """
     You are a world-class best-selling author and a successful book writer. 
@@ -823,7 +867,7 @@ def gen_research(description=None):
     # MODEL
     llm = ChatOpenAI(
         model = "gpt-4-0125-preview", # gpt-4-0125-preview gpt-3.5-turbo-0125
-        temperature = 0.618,
+        temperature = 0.331,
         max_retries = 3,
         # max_tokens = 1000,
         )
@@ -887,7 +931,7 @@ def gen_style(title, bio, style=""):
 
     # MODEL
     llm = ChatOpenAI(
-        model = model, #  gpt-4-0125-preview gpt-3.5-turbo-0125
+        model = "gpt-3.5-turbo-0125", #  gpt-4-0125-preview gpt-3.5-turbo-0125
         temperature = 0.618,
         max_retries = 3,
         # max_tokens = 4096,
@@ -943,7 +987,7 @@ def gen_bio(title, bio):
     
     # MODEL
     llm = ChatOpenAI(
-        model = model, #  gpt-4-0125-preview gpt-3.5-turbo-0125
+        model = "gpt-3.5-turbo-0125", #  gpt-4-0125-preview gpt-3.5-turbo-0125
         temperature = 0.618,
         max_retries = 3,
         max_tokens = 750,
@@ -992,15 +1036,20 @@ def gen_titles(category, subcategory, description):
     Look at figuring which keywords to include in the book title that will give it the best chance to be seen.
     - Provide examples of similar titles that have done well in the market.
     - Analyze what made these titles successful and how to emulate their success.
+    - DO NOT provide title ideas of books which already exist.
     - Besides each title, provide a brief (50-100 words) topic overview of the book, exploring the value proposition, target demographics, writing style, sales strategy.
-    - Respond strictly with the task completion in JSON block format with the title as key and overview as value.
+    - Respond strictly with the task completion in JSON block format with each title as key and description as value.
     ---
+    1. __Name of the Title 1__
+    *Description of the book*
+    2. __Name of the Title 2__
+    - and so forth -
     """
     
     # MODEL
     llm = ChatOpenAI(
-        model = model, #  gpt-4-0125-preview gpt-3.5-turbo-0125
-        temperature = 0.718,
+        model = "gpt-3.5-turbo-0125", #  gpt-4-0125-preview gpt-3.5-turbo-0125
+        temperature = 0.331,
         max_retries = 3,
         # max_tokens = 1000,
         )
@@ -1061,7 +1110,7 @@ if __name__ == "__main__":
     # print(">>> RESEACH:\n", research, "\n")
     
     # --------------------------------------------------------------------------   
-    research = utils.read_file("research")
+    # research = utils.read_file("research")
     description = utils.read_file("description")
     # outline_md = utils.read_file("outline")
     
@@ -1076,7 +1125,7 @@ if __name__ == "__main__":
     # citation = hardvard_referencing(outline_md, research)
     # print(">>> CITATION:\n", citation, "\n")
     
-    book = gen_book(description, research, outline)
+    book = gen_book(description, "no research", outline)
     print(">>> BOOK:\n", book, "\n")
     
     # outline = utils.read_file("extended_subchapter_outline_json")

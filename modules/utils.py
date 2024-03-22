@@ -324,7 +324,7 @@ def json_to_markdown_420(json_obj):
     markdown = process_item(None, json_obj)
     return markdown.strip()  # Ensure clean output without leading/trailing whitespace
 
-def json_to_markdown(json_obj):
+def json_to_markdown_WORKING(json_obj):
     """
     Converts a JSON object to a markdown string with selective use of bullet points, bold text,
     and numbers for better readability, while maintaining thematic breaks and depth-based headers
@@ -370,8 +370,58 @@ def json_to_markdown(json_obj):
     markdown = process_item(None, json_obj)
     return markdown.strip()  # Ensure clean output without leading/trailing whitespace
 
+def json_to_markdown(json_obj):
+    """
+    Converts a JSON object to a markdown string with selective use of bullet points, bold text,
+    and numbers for better readability, while maintaining thematic breaks and depth-based headers
+    for structure, ensuring header levels do not surpass ###.
+    """
+    def process_item(key, value, depth=1, is_list=False):
+        """
+        Processes each item, applying markdown based on its type, context, and whether it's part of a list,
+        adjusting the depth to manage header levels.
+        """
+        md = ""
+        prefix = ""
+        # Adjust the maximum depth for headers to not surpass level 3
+        adjusted_depth = min(depth, 4)  # Ensures we don't go beyond ### headers
+        
+        if adjusted_depth == 0:
+            adjusted_depth = 1
+        if adjusted_depth > 0:  # Adjust prefix based on depth to create numbered lists at deeper levels
+            prefix = f"{'#' * (adjusted_depth)} "
 
+        if key:
+            md += f"{prefix}{key}\n\n"
 
+        if isinstance(value, dict):
+            for sub_key, sub_value in value.items():
+                # Increase depth but do not let it surpass the maximum for headers
+                md += process_item(sub_key, sub_value, depth + 1 if depth < 4 else depth, is_list)
+        elif isinstance(value, list):
+            md += "\n".join([process_item(None, item, depth + 1 if depth < 4 else depth, is_list=True) for item in value]) # + "\n"
+        else:
+            # Format simple values, applying bold for keys if within a list for clarity
+            if key and is_list:
+                md += f"{value}\n\n" #\n" # f"**{key}:** {value}\n\n"
+            else:
+                md += f"{value}\n\n" #\n"
+
+        # Include thematic breaks after top-level sections for clear separation
+        if depth == 2:
+            md += "---\n\n" # \n"
+
+        return md
+
+    markdown = process_item(None, json_obj)
+    return markdown.strip()  # Ensure clean output without leading/trailing whitespace
+
+def test():
+    book_json = read_file("book_json")
+    book_json2 = json.loads(book_json)
+    book_md = json_to_markdown(book_json2)
+    save_markdown(book_md, "book_md_TEST")
+    
 # Example usage
 if __name__ == "__main__":
     
@@ -410,11 +460,13 @@ if __name__ == "__main__":
     
     # # Convert the JSON data to a Markdown-formatted string using LLM
     # json_to_md = convert_json_to_markdown(snippet_json_data)
-    json_to_md = json_to_markdown(full_json_data)
-    print(json_to_md)
+    # json_to_md = json_to_markdown(full_json_data)
+    # print(json_to_md)
 
-    extended_md = json_to_markdown(extended_json)
-    save_markdown(extended_md, "snippet_research")
+    # extended_md = json_to_markdown(extended_json)
+    # save_markdown(extended_md, "snippet_research")
+    
+
     # one_expand= expander(json_to_md, "You always rely consisely in 10 words. You are smart and you know it.")
     # print(one_expand)
     
