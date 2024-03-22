@@ -54,7 +54,7 @@ from langchain.agents import AgentExecutor
 
 model= "gpt-3.5-turbo-0125" # gpt-4-0125-preview  gpt-3.5-turbo-0125 - EFFICIENTCY
 # MODEL & MEMORY : gpt-4-0125-preview gpt-3.5-turbo-0125
-writer_llm = ChatOpenAI(model = model, temperature = 0.85, max_retries = 3, max_tokens = 2500)
+writer_llm = ChatOpenAI(model = model, temperature = 0.95, max_retries = 3, max_tokens = 3000)
 writer_memory = ConversationTokenBufferMemory(llm=writer_llm, memory_key="writer_history", return_messages=True, max_token_limit=7500)
 gpt35_llm = ChatOpenAI(model = "gpt-3.5-turbo-0125", temperature = 0.331, max_retries = 3, max_tokens = 3000)
 research_breadth = 2
@@ -768,7 +768,7 @@ def gen_research(description=None):
     else:
         print(f">>>Using given title for Research:\n\n{description}\n\n")
 
-    web_research = webc.gen_research(description, research_breadth, research_depth, research_name="web_research", paid_engine=False)
+    web_research = webc.gen_research(description, research_breadth, research_depth, research_name="web_research", paid_engine=True)
     
     system_message = """
     You are a world-class best-selling author and a successful book writer. 
